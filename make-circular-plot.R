@@ -1,19 +1,25 @@
 library("circlize")
 library("plyr")
 
+# infile<-'import-export-trim-non-countries-2014.csv'
+# imagefile<-'usa-imports-exports-non-countries-2014.png'
+infile<-'import-export-trim-2014.csv'
+imagefile<-'usa-imports-exports-2014.png'
+
 ##  Read in table
 setwd('/media/roberto/Main Storage/Documents/bertplot/code/R/Circlize')
-dat<-read.table('import-export-trim.csv',sep=',',header=T,stringsAsFactors = T)
+dat<-read.table(infile,sep=',',header=T,stringsAsFactors = T)
 
+dat<-dat[order(dat$order),]
 # Put data in matrix
-m<-matrix(0,13,13)
-m[1,2:13]<-dat[,2]
-m[2:13,1]<-dat[,3]
+m<-matrix(0,nrow(dat)+1,nrow(dat)+1)
+m[1,2:dim(m)[1]]<-dat[,2]
+m[2:dim(m)[1],1]<-dat[,3]
 rownames(m)<-colnames(m)<-c('USA',as.character(dat[,1]))
 m<-m/max(m)
 
 # Data.frame for details on each region
-df1<-data.frame(order=1:13,region=rownames(m))
+df1<-data.frame(order=1:nrow(m),region=rownames(m))
 
 ##  Sort order of data.frame
 ##  and matrix for plotting in circos
@@ -32,7 +38,7 @@ df1$lcol<-c('#3333FF80',paste('#',dat$col,sep=''))
 
 ##  Start Making Plot
 par(mar=c(0,0,0,0))
-png('test.png',height=1000,width=1000)
+png(imagefile,height=1000,width=1000)
 
 circos.clear()
 # Set up basic circos par
@@ -48,7 +54,7 @@ circos.initialize(factors = df1$region, xlim = cbind(df1$xmin, df1$xmax))
 circos.trackPlotRegion(ylim = c(0, 1.05),
                        # How wide the outer track is
                        track.height=0.1,
-                       #panel.fun for each section
+                       # panel.fun for each section
                        panel.fun = function(x, y) {
                          #select details of current sector
                          name = get.cell.meta.data("sector.index")
